@@ -30,14 +30,19 @@ public class ShortURLService {
     public ResponseEntity<Response> createShortLink(final DTO dto) {
 
         String destinationURL = dto.getDestinationURL();
+        final Response response = Response.builder().status(400).message("This destination URL is invalid, please enter a valid destination url").build();
+
+        if(!isValidDestinationURL(destinationURL)) {
+            return ResponseEntity.status(response.getStatus()).body(response);
+        }
 
         // rip the protocol (www, http, https)
         destinationURL = stripProtocol(destinationURL);
-        final Response response = Response.builder().status(400).message("This destination URL is already present").build();
 
         // check whether the destination url is already present in the database
         final ShortURL previousURL = dbRepository.findByDestinationURL(destinationURL);
         if(previousURL != null) {
+            response.setMessage("A short link for this destination url is already available: " + previousURL.getShortLink());
             return ResponseEntity.status(response.getStatus()).body(response);
         }
 
@@ -74,7 +79,23 @@ public class ShortURLService {
         }
 
         if(dto.getDestinationURL() != null) {
-            final String destinationURL = dto.getDestinationURL();
+            String destinationURL = dto.getDestinationURL();
+            response.setStatus(400);
+
+            if(!isValidDestinationURL(destinationURL)) {
+                response.setMessage("This destination URL is not valid " + destinationURL);
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+
+            destinationURL = stripProtocol(destinationURL);
+            LOGGER.debug("Destination url after stripping: {}", destinationURL);
+            ShortURL duplicateShortURL = dbRepository.findByDestinationURL(destinationURL);
+
+            if(duplicateShortURL != null) {
+                response.setMessage("This destination URL is already present: " + duplicateShortURL.getShortLink());
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+
             shortURL.setDestinationURL(destinationURL);
             response.setDestinationURL(destinationURL);
         }
@@ -114,6 +135,14 @@ public class ShortURLService {
 
     private static String stripProtocol(final String destinationURL) {
         return destinationURL.replaceAll("^(https?://|www\\.)", "");
+    }
+
+    protected boolean isValidDestinationURL(String destinationURL) {
+        String regex = "^(https?:\\/\\/|www\\.)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$";
+        if(destinationURL.matches(regex)) {
+            return true;
+        }
+        return false;
     }
 
 }
