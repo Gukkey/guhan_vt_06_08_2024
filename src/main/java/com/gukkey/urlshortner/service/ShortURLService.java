@@ -133,16 +133,15 @@ public class ShortURLService {
                 .build();
     }
 
-    private static String stripProtocol(final String destinationURL) {
+    public static String stripProtocol(final String destinationURL) {
         return destinationURL.replaceAll("^(https?://|www\\.)", "");
     }
 
-    protected boolean isValidDestinationURL(String destinationURL) {
+    public boolean isValidDestinationURL(String destinationURL) {
         String regex = "^(https?:\\/\\/|www\\.)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$";
         if(destinationURL.matches(regex)) {
             return true;
         }
         return false;
     }
-
 }
