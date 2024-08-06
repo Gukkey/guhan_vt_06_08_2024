@@ -137,6 +137,7 @@ public class ShortURLService {
         return destinationURL.replaceAll("^(https?://|www\\.)", "");
     }
 
+
     public boolean isValidDestinationURL(String destinationURL) {
         String regex = "^(https?:\\/\\/|www\\.)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$";
         if(destinationURL.matches(regex)) {
