@@ -1,0 +1,17 @@
+{
+    "inputs": [
+        {
+            "destinationURL": "www.facebook.com"
+        }, 
+        {
+            "destinationURL": "https://subdomain.maindomain.com"
+        },
+        {
+            "days": 30
+        }, 
+        {
+            "destinationURL": "www.opera.xyz",
+            "days": 12
+        }
+    ]
+}

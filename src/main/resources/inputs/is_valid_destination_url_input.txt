@@ -1,0 +1,5 @@
+www.example.com
+https://example1.example2.co
+http://test.org
+www.subdomain1.maindomain.sbi
+https://facebook.com
