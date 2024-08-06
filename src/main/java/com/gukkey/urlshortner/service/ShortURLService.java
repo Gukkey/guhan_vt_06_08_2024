@@ -78,6 +78,8 @@ public class ShortURLService {
             return ResponseEntity.status(response.getStatus()).body(response);
         }
 
+        boolean isEdited = false;
+
         if(dto.getDestinationURL() != null) {
             String destinationURL = dto.getDestinationURL();
             response.setStatus(400);
@@ -97,6 +99,7 @@ public class ShortURLService {
             }
 
             shortURL.setDestinationURL(destinationURL);
+            isEdited = true;
             response.setDestinationURL(destinationURL);
         }
 
@@ -104,10 +107,16 @@ public class ShortURLService {
             final long expireAt = dto.getDays();
             final LocalDate currentLocalDate = shortURL.getExpireAt().plusDays(expireAt);
             shortURL.setExpireAt(currentLocalDate);
+            isEdited = true;
             response.setExpireAt(currentLocalDate);
         }
 
-        dbRepository.save(shortURL);
+        if (isEdited) {
+            long timesEdited = shortURL.getTimesEdited() + 1;
+            shortURL.setTimesEdited(timesEdited);
+            response.setTimesEdited(timesEdited);
+        }
+        dbRepository.saveAndFlush(shortURL);
         response.setStatus(202);
         response.setMessage("Requested changes has been accepted");
         return ResponseEntity.status(response.getStatus()).body(response);
@@ -127,11 +136,38 @@ public class ShortURLService {
         }
 
         final String destinationURL = shortURL.getDestinationURL();
-        LOGGER.info("Redirecting {} to {}", shortLink, destinationURL);
+        LOGGER.info("Redirecting {} to {}", shortLink, destinationURL);        
+
+        long timesAccessed = shortURL.getTimesAccessed() + 1;
+        shortURL.setTimesAccessed(timesAccessed);
+        LOGGER.info("Times accessed: {}", timesAccessed + 1);
+        dbRepository.saveAndFlush(shortURL);
+
         return ResponseEntity.status(301)
                 .location(URI.create("http://" + destinationURL))
                 .build();
     }
+
+    public ResponseEntity<Response> getStats(final String shortLink) {
+        final var shortURL = dbRepository.findByShortLink(shortLink);
+
+        if (shortURL == null) {
+            LOGGER.warn("Short link not found: {}", shortLink);
+            final Response response = Response.builder()
+                    .status(404)
+                    .message("Link not found")
+                    .build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        long timesAccessed = shortURL.getTimesAccessed();
+        long timesEdited = shortURL.getTimesEdited();
+
+        var response = Response.builder().status(200).message("Found").timesAccessed(timesAccessed).timesEdited(timesEdited).build();
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+
 
     public static String stripProtocol(final String destinationURL) {
         return destinationURL.replaceAll("^(https?://|www\\.)", "");

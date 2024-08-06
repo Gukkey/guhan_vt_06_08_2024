@@ -18,4 +18,6 @@ public class Response {
     protected String shortURL;
     protected String destinationURL;
     protected LocalDate expireAt;
+    protected Long timesAccessed;
+    protected Long timesEdited;
 }
