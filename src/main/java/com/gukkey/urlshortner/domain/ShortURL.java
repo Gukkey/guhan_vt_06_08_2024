@@ -33,5 +33,10 @@ public class ShortURL {
 
     @Column(name = "expire_at")
     LocalDate expireAt;
-    
+
+    @Column(name = "times_accessed", columnDefinition = "bigint default 0")
+    long timesAccessed;
+
+    @Column(name = "times_edited", columnDefinition = "bigint default 0")
+    long timesEdited;
 }

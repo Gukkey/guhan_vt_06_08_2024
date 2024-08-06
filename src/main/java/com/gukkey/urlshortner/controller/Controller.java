@@ -68,4 +68,15 @@ public class Controller {
                             .message(TOO_MANY_REQUESTS).build());
         }
     }
+
+    @GetMapping("/stats/{shorturl}")
+    public ResponseEntity<Response> getStats(@PathVariable String shorturl) {
+        if (bucket.tryConsume(1)) {
+            return shortURLService.getStats(shorturl);
+        } else {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
+                    Response.builder().status(HttpStatus.TOO_MANY_REQUESTS.value())
+                            .message(TOO_MANY_REQUESTS).build());
+        }
+    }
 }
